@@ -1,0 +1,2 @@
+include requirements*.txt
+include http_image_streaming_service/resources/image_not_found.jpg

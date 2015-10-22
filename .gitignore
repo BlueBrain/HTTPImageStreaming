@@ -1,0 +1,14 @@
+*.pyc
+.coverage
+.idea
+ContinuousIntegration
+ci_dep.txt
+coverage.xml
+dist
+http_image_streaming_service.egg-info/
+pep8.txt
+platform_venv
+pylint.txt
+test-reports
+env
+
