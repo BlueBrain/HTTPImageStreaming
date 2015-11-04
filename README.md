@@ -2,6 +2,11 @@
 A service that streams images from one or many rendering resources.
 
 
+## ChangeLog
+
+To keep track of the changes between releases check the
+[changelog](doc/Changelog.md).
+
 ##Installation
 Install python 2.6 or 2.7 , and virtualenv with apt-get and pip
 

@@ -32,7 +32,7 @@ APPLICATION_NAME = 'image-streaming-service'
 API_VERSION = 'v1'
 
 # Image streaming service parameters
-HISS_HOSTNAME = 'localhost'
+HISS_HOSTNAME = '128.178.97.241'
 HISS_PORT = 8385
 HISS_URL = 'http://' + HISS_HOSTNAME + ':' + str(HISS_PORT) + \
            '/' + APPLICATION_NAME + '/' + API_VERSION
