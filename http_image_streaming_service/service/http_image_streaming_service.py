@@ -28,6 +28,7 @@ This module contains the actual application that serves the HTTP requests
 # pylint: disable=W0403
 import json
 import hashlib
+from urllib2 import URLError
 
 from flask import Flask, request, Response, make_response
 import os
@@ -57,18 +58,20 @@ def streamer(session_id, frame_grabber):
             try:
                 uri = route_manager.get_route_target(session_id)
                 frame = frame_grabber.get_frame(uri)
+                # Optimization: Generate an MD5 for the current frame and push
+                # it to the client only if it is different from the previous
+                # one
+                frame_md5 = int(hashlib.md5(frame).hexdigest(), 16)
+                if route_manager.get_frame_md5(session_id) != frame_md5:
+                    route_manager.set_frame_md5(session_id, frame_md5)
+                    yield (b'--frame\r\n'
+                           b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
             except KeyError:
                 # Returns an empty frame
                 frame = frame_not_found
-
-            # Optimization: Generate an MD5 for the current frame and push
-            # it to the client only if it is different from the previous
-            # one
-            frame_md5 = int(hashlib.md5(frame).hexdigest(), 16)
-            if route_manager.get_frame_md5(session_id) != frame_md5:
-                route_manager.set_frame_md5(session_id, frame_md5)
-                yield (b'--frame\r\n'
-                       b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+            except URLError:
+                route_manager.delete_route(session_id)
+                break
 
 
 @application.route('/' + settings.APPLICATION_NAME + '/' + settings.API_VERSION +
