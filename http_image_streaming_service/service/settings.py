@@ -39,6 +39,9 @@ HISS_URL = 'http://' + HISS_HOSTNAME + ':' + str(HISS_PORT) + \
 HISS_DEBUG = False
 HISS_THREADED = True
 
+# Image URI for frame grabber
+HISS_IMAGEJPEG = '/zerobuf/render/imagejpeg'
+
 # ID of cookie containing the session ID. The session ID is used to identify
 # the route that should be used to fetch images
 HBP_COOKIE = 'HBP'

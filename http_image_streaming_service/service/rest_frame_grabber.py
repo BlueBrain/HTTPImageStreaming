@@ -34,6 +34,8 @@ import json
 import os
 import custom_logging as log
 
+from settings import HISS_IMAGEJPEG
+
 
 class RestFrameGrabber(object):
     """
@@ -51,7 +53,7 @@ class RestFrameGrabber(object):
         :param uri URI from which the image should be fetched
         """
         try:
-            frame_uri = uri + '/imagejpeg'
+            frame_uri = uri + HISS_IMAGEJPEG
             log.info(1, 'Getting frame from ' + frame_uri)
             json_image_b64 = json.loads(urlopen(frame_uri).read())
             return base64.decodestring(json_image_b64['data'])
