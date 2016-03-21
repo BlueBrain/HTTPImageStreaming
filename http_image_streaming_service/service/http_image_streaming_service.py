@@ -54,10 +54,8 @@ def streamer(session_id, frame_grabber):
     while True:
         with application.app_context():
             frame = None
-            uri = ''
             try:
-                uri = route_manager.get_route_target(session_id)
-                frame = frame_grabber.get_frame(uri)
+                frame = frame_grabber.get_frame()
                 # Optimization: Generate an MD5 for the current frame and push
                 # it to the client only if it is different from the previous
                 # one
@@ -125,7 +123,8 @@ def image_streaming_feed(session_id):
     :param session_id: Id of the session to stream
     """
     log.info(1, 'Creating streamer for ' + str(session_id))
-    return Response(streamer(session_id, RestFrameGrabber()),
+    uri = route_manager.get_route_target(session_id)
+    return Response(streamer(session_id, RestFrameGrabber(uri)),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
