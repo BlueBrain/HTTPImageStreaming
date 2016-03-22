@@ -42,6 +42,12 @@ HISS_THREADED = False
 # Image URI for frame grabber
 HISS_IMAGEJPEG = '/zerobuf/render/imagejpeg'
 
+# Request timeout for frame grabbing
+HISS_REQUEST_TIMEOUT = 1
+
+# Number of frames par seconds to be sent to the end-client
+HISS_FRAMES_PER_SECOND = 10
+
 # ID of cookie containing the session ID. The session ID is used to identify
 # the route that should be used to fetch images
 HBP_COOKIE = 'HBP'
