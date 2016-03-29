@@ -28,7 +28,7 @@ This module contains the actual application that serves the HTTP requests
 # pylint: disable=W0403
 import json
 import hashlib
-from urllib2 import URLError
+import requests
 
 from flask import Flask, request, Response, make_response
 import os
@@ -68,7 +68,10 @@ def streamer(session_id, frame_grabber):
             except KeyError:
                 # Returns an empty frame
                 frame = frame_not_found
-            except URLError:
+            except ValueError as e:
+                log.error(str(e))
+            except requests.exceptions as e:
+                log.error('Removing route for session ' + str(session_id))
                 route_manager.delete_route(session_id)
                 break
 
