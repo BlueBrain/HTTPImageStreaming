@@ -126,8 +126,13 @@ def image_streaming_feed(session_id):
     Handles the image stream according to the given session
     :param session_id: Id of the session to stream
     """
-    log.info(1, 'Creating streamer for ' + str(session_id))
-    uri = route_manager.get_route_target(session_id)
+    log.info(1, 'Getting stream')
+    if session_id == 'demo':
+        log.info(1, 'Creating local streamer')
+        uri = 'http://' + settings.HISS_HOSTNAME + ':5000'
+    else:
+        log.info(1, 'Creating streamer for ' + str(session_id))
+        uri = route_manager.get_route_target(session_id)
     return Response(streamer(session_id, RestFrameGrabber(uri)),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
