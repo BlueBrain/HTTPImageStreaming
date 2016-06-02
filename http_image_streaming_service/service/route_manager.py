@@ -53,7 +53,7 @@ class RouteManager(object):
             {'uri': settings.HISS_URL +
                 '/image_streaming_feed/' +
                 str(session_id)})
-        log.info(1, 'Route for ' + session_id + ' is ' + str(response))
+        log.info(1, 'Route for ' + str(session_id) + ' is ' + str(response))
         return response
 
     def get_route_target(self, session_id):
@@ -106,8 +106,10 @@ class RouteManager(object):
         :param uri: URI of new route
         """
         self.routes[session_id] = uri
-        log.info(1, 'Route ' + self.routes[session_id] + ' successfully added')
-        return make_response(self.routes[session_id], 201)
+        msg = 'Route ' + self.routes[session_id] + ' successfully added';
+        log.info(1, msg)
+        response = json.dumps({'contents': msg})
+        return make_response(response, 201)
 
     def delete_route(self, session_id):
         """
@@ -118,11 +120,12 @@ class RouteManager(object):
         try:
             uri = self.routes[session_id]
             del self.routes[session_id]
-            response = 'Route ' + uri + ' successfully removed'
+            msg = 'Route ' + uri + ' successfully removed'
+            response = json.dumps({'contents': msg})
             log.info(1, response)
             return make_response(response, 200)
         except KeyError:
-            response = 'Route does not exist'
+            response = json.dumps({'contents': 'Route does not exist'})
             log.info(1, response)
             return make_response(response, 404)
 
