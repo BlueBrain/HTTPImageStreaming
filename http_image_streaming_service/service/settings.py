@@ -32,7 +32,7 @@ APPLICATION_NAME = 'image-streaming-service'
 API_VERSION = 'v1'
 
 # Image streaming service parameters
-HISS_HOSTNAME = 'localhost'
+HISS_HOSTNAME = '127.0.0.1'
 HISS_PORT = 8385
 HISS_URL = 'http://' + HISS_HOSTNAME + ':' + str(HISS_PORT) + \
            '/' + APPLICATION_NAME + '/' + API_VERSION
@@ -40,13 +40,13 @@ HISS_DEBUG = False
 HISS_THREADED = False
 
 # Image URI for frame grabber
-HISS_IMAGEJPEG = '/zerobuf/render/imagejpeg'
+HISS_IMAGEJPEG = '/lexis/render/imagejpeg'
 
 # Request timeout for frame grabbing
-HISS_REQUEST_TIMEOUT = 1
+HISS_REQUEST_TIMEOUT = 10
 
 # Number of frames par seconds to be sent to the end-client
-HISS_FRAMES_PER_SECOND = 10
+HISS_FRAMES_PER_SECOND = 5
 
 # ID of cookie containing the session ID. The session ID is used to identify
 # the route that should be used to fetch images
