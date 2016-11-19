@@ -37,7 +37,7 @@ HISS_PORT = 8385
 HISS_URL = 'http://' + HISS_HOSTNAME + ':' + str(HISS_PORT) + \
            '/' + APPLICATION_NAME + '/' + API_VERSION
 HISS_DEBUG = False
-HISS_THREADED = False
+HISS_THREADED = True
 
 # Image URI for frame grabber
 HISS_IMAGEJPEG = '/lexis/render/imagejpeg'

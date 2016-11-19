@@ -106,7 +106,7 @@ class RouteManager(object):
         :param uri: URI of new route
         """
         self.routes[session_id] = uri
-        msg = 'Route ' + self.routes[session_id] + ' successfully added';
+        msg = 'Route ' + self.routes[session_id] + ' successfully added'
         log.info(1, msg)
         response = json.dumps({'contents': msg})
         return make_response(response, 201)
