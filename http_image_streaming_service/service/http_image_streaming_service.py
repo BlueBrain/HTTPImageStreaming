@@ -51,7 +51,7 @@ def streamer(session_id, frame_grabber):
     :param session_id: Id of the session to stream
     :param frame_grabber: Implementation of the class in charge of fetching the images
     """
-    while True:
+    while route_manager.get_route(session_id):
         with application.app_context():
             frame = None
             try:
@@ -59,7 +59,7 @@ def streamer(session_id, frame_grabber):
                 # Optimization: Generate an MD5 for the current frame and push
                 # it to the client only if it is different from the previous
                 # one
-                if not frame == None:
+                if frame is not None:
                     frame_md5 = int(hashlib.md5(frame).hexdigest(), 16)
                     if route_manager.get_frame_md5(session_id) != frame_md5:
                         route_manager.set_frame_md5(session_id, frame_md5)
@@ -72,6 +72,12 @@ def streamer(session_id, frame_grabber):
                 log.error(str(e))
             except requests.exceptions as e:
                 log.error('Removing route for session ' + str(session_id))
+                route_manager.delete_route(session_id)
+                break
+            except IOError:
+                log.error('Lost connection with rendering resource. ' +
+                          'Removing route for session ' +
+                          str(session_id))
                 route_manager.delete_route(session_id)
                 break
 
@@ -98,25 +104,23 @@ def route_management():
     """
     try:
         session_id = request.cookies[settings.HBP_COOKIE]
-        if request.method == 'GET':
-            response = route_manager.get_route(session_id)
-            return make_response(response, 200)
-        if request.method == 'POST':
-            if request.data is None:
-                response = 'Error: Data must be provided for POST operations'
-                log.error(response)
-                return make_response(response, 401)
-            json_data = json.loads(request.data)
-            uri = json_data['uri']
-            log.info(1, 'Creating new route for ' + uri)
-            response = route_manager.create_route(session_id, uri)
-            return make_response(response, 201)
-        else:
-            return route_manager.delete_route(session_id)
-    except KeyError as e:
-        response = str(e)
-        log.info(1, response)
-        return make_response(response, 404)
+    except KeyError:
+        session_id = 'demo'
+    if request.method == 'GET':
+        response = route_manager.get_route(session_id)
+        return make_response(response, 200)
+    if request.method == 'POST':
+        if request.data is None:
+            response = 'Error: Data must be provided for POST operations'
+            log.error(response)
+            return make_response(response, 401)
+        json_data = json.loads(request.data)
+        uri = json_data['uri']
+        log.info(1, 'Creating new route for ' + uri)
+        response = route_manager.create_route(session_id, uri)
+        return make_response(response, 201)
+    else:
+        return route_manager.delete_route(session_id)
 
 
 @application.route('/' + settings.APPLICATION_NAME + '/' + settings.API_VERSION +
@@ -130,6 +134,7 @@ def image_streaming_feed(session_id):
     if session_id == 'demo':
         log.info(1, 'Creating local streamer')
         uri = 'http://' + settings.HISS_HOSTNAME + ':5000'
+        route_manager.create_route(session_id, uri)
     else:
         log.info(1, 'Creating streamer for ' + str(session_id))
         uri = route_manager.get_route_target(session_id)
