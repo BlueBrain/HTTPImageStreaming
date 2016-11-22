@@ -48,7 +48,8 @@ class RouteManager(object):
         # Check for the existence of the route. Raise a KeyError exception
         # if not found
         # pylint: disable=W0104
-        self.routes[session_id]
+        if session_id != 'demo':
+            self.routes[session_id]
         response = json.dumps(
             {'uri': settings.HISS_URL +
                 '/image_streaming_feed/' +
