@@ -107,8 +107,11 @@ def route_management():
     except KeyError:
         session_id = 'demo'
     if request.method == 'GET':
-        response = route_manager.get_route(session_id)
-        return make_response(response, 200)
+        try:
+            response = route_manager.get_route(session_id)
+            return make_response(response, 200)
+        except KeyError as e:
+            return make_response(str(e), 404)
     if request.method == 'POST':
         if request.data is None:
             response = 'Error: Data must be provided for POST operations'
