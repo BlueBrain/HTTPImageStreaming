@@ -3,7 +3,21 @@ Changelog {#Changelog}
 
 ## HTTP Image Streaming Service
 
+### 0.3.0
+
+* [13](https://github.com/BlueBrain/HTTPImageStreaming/pull/13):
+  Fixed non-existant routes handling
+* [12](https://github.com/BlueBrain/HTTPImageStreaming/pull/12):
+  Improved route management robustness
+* [11](https://github.com/BlueBrain/HTTPImageStreaming/pull/11):
+  Updated imagejpg url
+* [9](https://github.com/BlueBrain/HTTPImageStreaming/pull/9):
+  Added demo stream (no route needs to be created) and fixed timeout issue
+* [8](https://github.com/BlueBrain/HTTPImageStreaming/pull/8):
+  Fixed response to JSON format
+  
 ### 0.2.0
+
 * [7](https://github.com/BlueBrain/HTTPImageStreaming/pull/7):
   Improved robustness when Rendering Resource crashes
 * [6](https://github.com/BlueBrain/HTTPImageStreaming/pull/6):
@@ -20,5 +34,6 @@ Changelog {#Changelog}
   Upgraded to latest API
 
 ### 0.1.0
+
 Initial Release
 
