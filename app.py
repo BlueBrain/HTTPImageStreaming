@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# pylint: disable=R0801,W0122,E0602
 
 # Copyright (c) 2014-2015, Human Brain Project
 #                          Cyrille Favreau <cyrille.favreau@epfl.ch>
@@ -21,5 +21,8 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 # All rights reserved. Do not distribute without further notice.
 
-''' version '''
-VERSION = "0.3.2"
+"""app.py"""
+import os
+import http_image_streaming_service.service.http_image_streaming_service as hiss
+
+hiss.application.run(host=os.environ['HOSTNAME'], port=8080, debug=False, threaded=True)
