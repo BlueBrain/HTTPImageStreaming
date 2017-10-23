@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (c) 2014-2015, Human Brain Project
+# Copyright (c) 2014-2017, Human Brain Project
 #                          Cyrille Favreau <cyrille.favreau@epfl.ch>
 #
 # This file is part of RenderingResourceManager
@@ -24,6 +24,7 @@
 """
 This module contains the service settings
 """
+import os
 
 # Application name
 APPLICATION_NAME = 'image-streaming-service'
@@ -36,11 +37,12 @@ HISS_HOSTNAME = '127.0.0.1'
 HISS_PORT = 8385
 HISS_URL = 'http://' + HISS_HOSTNAME + ':' + str(HISS_PORT) + \
            '/' + APPLICATION_NAME + '/' + API_VERSION
-HISS_DEBUG = False
+HISS_DEBUG = True
 HISS_THREADED = True
+HISS_DB = os.environ.get('HISS_DB', '/tmp') + '/hiss.db'
 
 # Image URI for frame grabber
-HISS_IMAGEJPEG = '/lexis/render/imagejpeg'
+HISS_IMAGEJPEG = '/v1/image-jpeg'
 
 # Request timeout for frame grabbing
 HISS_REQUEST_TIMEOUT = 10
