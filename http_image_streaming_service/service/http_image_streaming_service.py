@@ -52,7 +52,7 @@ try:
 except sqlite3.OperationalError as e:
     log.info(1, e)
 
-route_manager = RouteManager(conn)
+route_manager = RouteManager()
 
 
 def streamer(session_id, frame_grabber):
@@ -63,21 +63,26 @@ def streamer(session_id, frame_grabber):
     """
     while route_manager.get_route(session_id):
         with application.app_context():
-            frame = None
             try:
                 frame = frame_grabber.get_frame()
                 # Optimization: Generate an MD5 for the current frame and push
                 # it to the client only if it is different from the previous
                 # one
                 if frame is not None:
-                    frame_md5 = int(hashlib.md5(frame).hexdigest(), 16)
-                    if route_manager.get_frame_md5(session_id) != frame_md5:
-                        route_manager.set_frame_md5(session_id, frame_md5)
+                    push_frame = True
+                    if settings.HISS_STREAMING_OPTIMIZATION:
+                        frame_md5 = int(hashlib.md5(frame).hexdigest(), 16)
+                        if route_manager.get_frame_md5(session_id) != frame_md5:
+                            route_manager.set_frame_md5(session_id, frame_md5)
+                        else:
+                            push_frame = False
+                    if push_frame:
                         yield (b'--frame\r\n'
                                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
             except KeyError:
                 # Returns an empty frame
-                frame = frame_not_found
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' + frame_not_found + b'\r\n')
             except ValueError as e:
                 log.error(str(e))
             except requests.exceptions as e:
