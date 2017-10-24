@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (c) 2014-2015, Human Brain Project
+# Copyright (c) 2014-2017, Human Brain Project
 # Cyrille Favreau <cyrille.favreau@epfl.ch>
 #
 # This file is part of RenderingResourceManager
@@ -42,7 +42,17 @@ frame_not_found = open(os.path.dirname(__file__) +
                        '/../resources/image_not_found.jpg', 'rb').read()
 
 application = Flask(__name__)
-route_manager = RouteManager()
+
+# Create database
+import sqlite3
+
+conn = sqlite3.connect(settings.HISS_DB)
+try:
+    conn.execute('create table routes (session_id text, uri text)')
+except sqlite3.OperationalError as e:
+    log.info(1, e)
+
+route_manager = RouteManager(conn)
 
 
 def streamer(session_id, frame_grabber):
@@ -146,9 +156,12 @@ def image_streaming_feed(session_id):
 
 
 if __name__ == '__main__':
+    # Serve requests
     log.info(1, 'Serving requests on ' + settings.HISS_HOSTNAME +
              ':' + str(settings.HISS_PORT))
     application.run(host=settings.HISS_HOSTNAME,
                     port=settings.HISS_PORT,
                     debug=settings.HISS_DEBUG,
                     threaded=settings.HISS_THREADED)
+    log.info(1, 'Closing database')
+    conn.close()

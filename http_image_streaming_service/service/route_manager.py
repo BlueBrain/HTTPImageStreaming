@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (c) 2014-2015, Human Brain Project
+# Copyright (c) 2014-2017, Human Brain Project
 #                          Cyrille Favreau <cyrille.favreau@epfl.ch>
 #
 # This file is part of RenderingResourceManager
@@ -37,9 +37,10 @@ class RouteManager(object):
     """
     Constructor
     """
-    def __init__(self):
-        self.routes = dict()
-        self.frame_md5s = dict()
+    def __init__(self, db_connection):
+        self._frame_md5s = dict()
+        self._db_connection = db_connection
+        log.info(1, 'Route manager initialized')
 
     def get_route(self, session_id):
         """
@@ -49,7 +50,12 @@ class RouteManager(object):
         # if not found
         # pylint: disable=W0104
         if session_id != 'demo':
-            self.routes[session_id]
+            cur = self._db_connection.cursor()
+            cur.execute('select uri from routes where session_id=?', (session_id,))
+            rows = cur.fetchall()
+            if len(rows) == 0:
+                raise KeyError
+
         response = json.dumps(
             {'uri': settings.HISS_URL +
                 '/image_streaming_feed/' +
@@ -62,7 +68,10 @@ class RouteManager(object):
         Returns a JSON formatted list of active routes
         """
         log.info(1, 'Route target for session ' + session_id + ' is...')
-        response = self.routes[session_id]
+        cur = self._db_connection.cursor()
+        cur.execute('select uri from routes where session_id=?', (session_id,))
+        rows = cur.fetchall()
+        response = rows[0][0]
         log.info(1, 'Route target for session ' + session_id + ' is ' + str(response))
         return response
 
@@ -73,7 +82,7 @@ class RouteManager(object):
         """
         response = None
         try:
-            response = self.frame_md5s[session_id]
+            response = self._frame_md5s[session_id]
             log.debug(1, 'Hashed frame for ' + session_id + ' is ' + str(response))
         except KeyError:
             log.debug(1, 'No hashed frame for ' + session_id)
@@ -85,17 +94,20 @@ class RouteManager(object):
         :param session_id: Id of the session for which the route was created
         :param md5: MD5 of the frame
         """
-        self.frame_md5s[session_id] = md5
+        self._frame_md5s[session_id] = md5
 
     def list_routes(self):
         """
         Returns a JSON formatted list of active routes
         """
         log.info(1, 'Getting all routes')
-        response = ''
-        for key, value in self.routes.items():
-            response = response + '{' + key + ': ' + value + '}'
-        response = json.dumps(self.routes.items())
+        routes = dict()
+        cur = self._db_connection.cursor()
+        cur.execute('select session_id, uri from routes')
+        rows = cur.fetchall()
+        for row in rows:
+            routes[row[0]] = row[1]
+        response = json.dumps(routes.items())
         log.info(1, response)
         return make_response(response, 200)
 
@@ -106,8 +118,12 @@ class RouteManager(object):
         :param session_id: Id of the session for which the route was created
         :param uri: URI of new route
         """
-        self.routes[session_id] = uri
-        msg = 'Route ' + self.routes[session_id] + ' successfully added'
+        cur = self._db_connection.cursor()
+        cur.execute('insert into routes (session_id, uri) values(?, ?)', (session_id, uri))
+        self._db_connection.commit()
+
+        # self.routes[session_id] = uri
+        msg = 'Route ' + uri + ' successfully added'
         log.info(1, msg)
         response = json.dumps({'contents': msg})
         return make_response(response, 201)
@@ -119,9 +135,10 @@ class RouteManager(object):
         """
         log.info(1, 'Removing route for session ' + str(session_id))
         try:
-            uri = self.routes[session_id]
-            del self.routes[session_id]
-            msg = 'Route ' + uri + ' successfully removed'
+            cur = self._db_connection.cursor()
+            cur.execute('delete from routes where session_id=?', (session_id,))
+            self._db_connection.commit()
+            msg = 'Route ' + session_id + ' successfully removed'
             response = json.dumps({'contents': msg})
             log.info(1, response)
             return make_response(response, 200)
@@ -134,5 +151,7 @@ class RouteManager(object):
         """
         Removes all existing routes
         """
-        self.routes.clear()
+        cur = self._db_connection.cursor()
+        cur.execute('delete from routes')
+        self._db_connection.commit()
         return [200, 'Routes cleared']
