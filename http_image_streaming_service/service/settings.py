@@ -41,8 +41,11 @@ HISS_DEBUG = True
 HISS_THREADED = True
 HISS_DB = os.environ.get('HISS_DB', '/tmp') + '/hiss.db'
 
+# If True, a frame is push to the end-client only if different from the previous one
+HISS_STREAMING_OPTIMIZATION = False
+
 # Image URI for frame grabber
-HISS_IMAGEJPEG = '/v1/image-jpeg'
+HISS_IMAGE_JPEG = '/v1/image-jpeg'
 
 # Request timeout for frame grabbing
 HISS_REQUEST_TIMEOUT = 10

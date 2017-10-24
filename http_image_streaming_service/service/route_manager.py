@@ -30,6 +30,7 @@ from flask import make_response
 import json
 import custom_logging as log
 import settings
+import sqlite3
 
 
 class RouteManager(object):
@@ -37,12 +38,12 @@ class RouteManager(object):
     """
     Constructor
     """
-    def __init__(self, db_connection):
+    def __init__(self):
         self._frame_md5s = dict()
-        self._db_connection = db_connection
         log.info(1, 'Route manager initialized')
 
-    def get_route(self, session_id):
+    @staticmethod
+    def get_route(session_id):
         """
         Returns a JSON formatted list of active routes
         """
@@ -50,11 +51,15 @@ class RouteManager(object):
         # if not found
         # pylint: disable=W0104
         if session_id != 'demo':
-            cur = self._db_connection.cursor()
-            cur.execute('select uri from routes where session_id=?', (session_id,))
-            rows = cur.fetchall()
-            if len(rows) == 0:
-                raise KeyError
+            conn = sqlite3.connect(settings.HISS_DB)
+            try:
+                cur = conn.cursor()
+                cur.execute('select uri from routes where session_id=?', (session_id,))
+                rows = cur.fetchall()
+                if len(rows) == 0:
+                    raise KeyError
+            finally:
+                conn.close()
 
         response = json.dumps(
             {'uri': settings.HISS_URL +
@@ -63,15 +68,20 @@ class RouteManager(object):
         log.info(1, 'Route for ' + str(session_id) + ' is ' + str(response))
         return response
 
-    def get_route_target(self, session_id):
+    @staticmethod
+    def get_route_target(session_id):
         """
         Returns a JSON formatted list of active routes
         """
         log.info(1, 'Route target for session ' + session_id + ' is...')
-        cur = self._db_connection.cursor()
-        cur.execute('select uri from routes where session_id=?', (session_id,))
-        rows = cur.fetchall()
-        response = rows[0][0]
+        conn = sqlite3.connect(settings.HISS_DB)
+        try:
+            cur = conn.cursor()
+            cur.execute('select uri from routes where session_id=?', (session_id,))
+            rows = cur.fetchall()
+            response = rows[0][0]
+        finally:
+            conn.close()
         log.info(1, 'Route target for session ' + session_id + ' is ' + str(response))
         return response
 
@@ -96,31 +106,41 @@ class RouteManager(object):
         """
         self._frame_md5s[session_id] = md5
 
-    def list_routes(self):
+    @staticmethod
+    def list_routes():
         """
         Returns a JSON formatted list of active routes
         """
         log.info(1, 'Getting all routes')
         routes = dict()
-        cur = self._db_connection.cursor()
-        cur.execute('select session_id, uri from routes')
-        rows = cur.fetchall()
-        for row in rows:
-            routes[row[0]] = row[1]
+        conn = sqlite3.connect(settings.HISS_DB)
+        try:
+            cur = conn.cursor()
+            cur.execute('select session_id, uri from routes')
+            rows = cur.fetchall()
+            for row in rows:
+                routes[row[0]] = row[1]
+        finally:
+            conn.close()
         response = json.dumps(routes.items())
         log.info(1, response)
         return make_response(response, 200)
 
-    def create_route(self, session_id, uri):
+    @staticmethod
+    def create_route(session_id, uri):
         """
         Adds a new route. If the route already exists for the given session, the
         current URI is replaced by the new one
         :param session_id: Id of the session for which the route was created
         :param uri: URI of new route
         """
-        cur = self._db_connection.cursor()
-        cur.execute('insert into routes (session_id, uri) values(?, ?)', (session_id, uri))
-        self._db_connection.commit()
+        conn = sqlite3.connect(settings.HISS_DB)
+        try:
+            cur = conn.cursor()
+            cur.execute('insert into routes (session_id, uri) values(?, ?)', (session_id, uri))
+            conn.commit()
+        finally:
+            conn.close()
 
         # self.routes[session_id] = uri
         msg = 'Route ' + uri + ' successfully added'
@@ -128,16 +148,18 @@ class RouteManager(object):
         response = json.dumps({'contents': msg})
         return make_response(response, 201)
 
-    def delete_route(self, session_id):
+    @staticmethod
+    def delete_route(session_id):
         """
         Removes an existing route
         :param session_id: Id of the session for which the route was created
         """
         log.info(1, 'Removing route for session ' + str(session_id))
+        conn = sqlite3.connect(settings.HISS_DB)
         try:
-            cur = self._db_connection.cursor()
+            cur = conn.cursor()
             cur.execute('delete from routes where session_id=?', (session_id,))
-            self._db_connection.commit()
+            conn.commit()
             msg = 'Route ' + session_id + ' successfully removed'
             response = json.dumps({'contents': msg})
             log.info(1, response)
@@ -146,12 +168,19 @@ class RouteManager(object):
             response = json.dumps({'contents': 'Route does not exist'})
             log.info(1, response)
             return make_response(response, 404)
+        finally:
+            conn.close()
 
-    def clear_routes(self):
+    @staticmethod
+    def clear_routes():
         """
         Removes all existing routes
         """
-        cur = self._db_connection.cursor()
-        cur.execute('delete from routes')
-        self._db_connection.commit()
+        conn = sqlite3.connect(settings.HISS_DB)
+        try:
+            cur = conn.cursor()
+            cur.execute('delete from routes')
+            conn.commit()
+        finally:
+            conn.close()
         return [200, 'Routes cleared']
