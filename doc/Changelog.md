@@ -3,6 +3,11 @@ Changelog {#Changelog}
 
 ## HTTP Image Streaming Service
 
+### 0.3.5
+
+* [22](https://github.com/BlueBrain/HTTPImageStreaming/pull/22):
+  Store routes in local database to allow multiple workers
+
 ### 0.3.0
 
 * [13](https://github.com/BlueBrain/HTTPImageStreaming/pull/13):
